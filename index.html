@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Modelo 3D Interactivo por Pasos</title>
+    <script type="module" src="https://ajax.googleapis.com/ajax/libs/model-viewer/3.4.0/model-viewer.min.js"></script>
+    <style>
+
+        /* Resetea todos los márgenes por defecto del navegador */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #121212; /* Evita destellos blancos al cargar */
+        }
+
+        .visor-container {
+            position: relative;
+            width: 100%;
+            max-width: 1500px;
+            height: 900px;
+            overflow: hidden;
+            background-color: #121212;
+            user-select: none;
+        }
+
+        /* 0. PANTALLA BIENVENIDA */
+        .pantalla-bienvenida {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            z-index: 10;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            background-color: #121212;
+            color: #ffffff;
+            font-family: sans-serif;
+            transition: opacity 0.8s ease;
+        }
+
+        .btn-iniciar {
+            padding: 14px 28px;
+            font-size: 1.1rem;
+            cursor: pointer;
+            border: none;
+            background-color: #ffffff;
+            color: #121212;
+            border-radius: 30px;
+            margin-top: 20px;
+            font-weight: bold;
+            transition: transform 0.2s, background-color 0.2s;
+        }
+
+        .btn-iniciar:hover {
+            transform: scale(1.05);
+            background-color: #e0e0e0;
+        }
+
+        /* 1. COLLAGE DE FONDO */
+        .collage-fondo {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            grid-template-rows: repeat(2, 1fr);
+            gap: 1px;
+            z-index: 1;
+        }
+
+        .collage-fondo img {
+            width: 100%;
+            height: 100%;
+            min-width: 0;
+            min-height: 0;
+            object-fit: cover;
+            object-position: center;
+            opacity: 0;
+            transition: opacity 0.8s ease;
+        }
+
+        .collage-fondo img.visible {
+            opacity: 1;
+        }
+
+        /* 2. PALABRAS TRANSPARENTES */
+        .overlay-palabras {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            grid-template-rows: 1fr 1fr;
+            z-index: 2;
+            pointer-events: none;
+        }
+
+        .overlay-palabras img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            opacity: 0;
+            transition: opacity 0.8s ease;
+
+            clip-path: inset(0 100% 0 0);
+            transition: clip-path 1.8s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s ease;
+        }
+
+        .overlay-palabras img.revelada {
+            opacity: 0.8;
+            clip-path: inset(0 0 0 0);  
+        }
+
+        .palabra-1 {
+            grid-column: 1;
+            grid-row: 1;
+            scale: 1.15;
+            place-self: center;
+            transform: rotate(-45deg);
+        }
+
+        .palabra-2 {
+            grid-column: 2;
+            grid-row: 2;
+            scale: 1.0;
+            place-self: center;
+            margin-bottom: 100px;
+            transform: rotate(-45deg);
+            margin-top: -300px;
+            
+        }
+
+        /* 3. MODELO 3D (Subida lenta desde abajo) */
+        #myModel {
+            position: relative;
+            z-index: 3;
+            width: 100%;
+            height: 100%;
+            background-color: transparent;
+            opacity: 0;
+            transform: translateY(100%);
+            pointer-events: none;
+            transition: transform 2.5s cubic-bezier(0.16, 1, 0.3, 1), opacity 1.5s ease;
+        }
+
+        #myModel.visible {
+            opacity: 1;
+            transform: translateY(0);
+            pointer-events: auto;
+        }
+
+        /* BOTÓN RECTANGULAR CON LA FORMA DE LA TARJETA */
+        .hotspot-tarjeta {
+            /* 1. Dimensiones de la tarjeta (ajusta proporciones según tu modelo) */
+            width: 30px; 
+            height: 20px;
+            
+            /* 2. Quitar la forma circular */
+            border-radius: 3px; /* Usa 0px si la quiere recta o 3px para bordes suaves */
+            
+            /* 3. Estilo visual (Semi-transparente para ver el plano 3D por debajo) */
+            background-color: rgba(255, 255, 255, 0.15); 
+            border: 1.5px dashed rgba(255, 255, 255, 0.8); /* Borde punteado estilo etiqueta */
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+            
+            cursor: pointer;
+            transition: transform 0.3s, background-color 0.3s, border-color 0.3s;
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        /* Efecto al pasar el mouse */
+        .hotspot-tarjeta:hover {
+            transform: scale(1.1);
+            background-color: rgba(255, 255, 255, 0.4);
+            border-color: #ffffff;
+        }
+
+        /* Se activan cuando el modelo 3D ya subió */
+        #myModel.visible .hotspot-tarjeta {
+            opacity: 1;
+            pointer-events: auto;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="visor-container" id="contenedorPrincipal">
+        
+        <!-- 0. Bienvenida -->
+        <div>hello</div>
+        <div class="pantalla-bienvenida" id="pantallaBienvenida">
+            <h1>Bienvenida!</h1>
+            <button class="btn-iniciar" id="btnIniciar">initium</button>
+        </div>
+
+        <!-- 1. Collage de Fondo -->
+        <div class="collage-fondo" id="collageFondo">
+            <img src="1.jpeg" alt="Fondo 1">
+            <img src="2.jpeg" alt="Fondo 2">
+            <img src="3.jpeg" alt="Fondo 3">
+            <img src="4.jpeg" alt="Fondo 4">
+            <img src="5.jpeg" alt="Fondo 5">
+            <img src="6.jpeg" alt="Fondo 6">
+            <img src="7.jpeg" alt="Fondo 7">
+            <img src="8.jpeg" alt="Fondo 8">
+        </div>
+
+        <!-- 2. Palabras Transparentes -->
+        <div class="overlay-palabras">
+            <img src="TMG.png" alt="Texto TMG" class="palabra-1" id="imgTMG">
+            <img src="WLA.png" alt="Texto WLA" class="palabra-2" id="imgWLA">
+        </div>
+
+        <!-- 3. Visor 3D con Hotspots -->
+      <!-- Visor 3D con Hotspots fijados permanentemente -->
+        <model-viewer 
+        id="myModel"
+        src="bouquet.glb" 
+        alt="mi work" 
+        auto-rotate 
+        camera-controls>
+        
+        <h3 style="color: #000000;">Mi Proyecto con Amor, Arte y... Abel para ti Yamilet</h3>
+
+
+        <!-- Tarjeta Izquierda (TMG) -->
+        <button 
+            class="hotspot-tarjeta" 
+            slot="hotspot-tmg" 
+            id="btnTMG"
+            data-position="11.286763875223583m 0.4201937699761148m 1.2446559923712128m" 
+            data-normal="-0.4505639214145996m -0.2659449251918197m 0.8522120918434659m">
+        </button>
+
+        <!-- Tarjeta Derecha (WLA) -->
+        <button 
+            class="hotspot-tarjeta" 
+            slot="hotspot-wla" 
+            id="btnWLA"
+            data-position="12.774733164749405m 0.41984113646100785m 1.2957112571110718m" 
+            data-normal="0.4216089742329449m -0.18008473328344982m 0.8887155684944834m">
+        </button>
+
+        </model-viewer>
+        
+
+    </div>
+
+    <script>
+        let pasoActual = 0;
+    
+        const contenedor = document.getElementById('contenedorPrincipal');
+        const btnIniciar = document.getElementById('btnIniciar');
+        const pantallaBienvenida = document.getElementById('pantallaBienvenida');
+        const imagenesCollage = document.querySelectorAll('#collageFondo img');
+        const modelViewer = document.getElementById('myModel');
+        
+        const imgTMG = document.getElementById('imgTMG');
+        const imgWLA = document.getElementById('imgWLA');
+        const btnTMG = document.getElementById('btnTMG');
+        const btnWLA = document.getElementById('btnWLA');
+    
+        // 0. Iniciar experiencia
+        btnIniciar.addEventListener('click', (event) => {
+            event.stopPropagation();
+            
+            pantallaBienvenida.style.opacity = '0';
+            setTimeout(() => {
+                pantallaBienvenida.style.display = 'none';
+            }, 800);
+    
+            imagenesCollage.forEach((img, index) => {
+                setTimeout(() => {
+                    img.classList.add('visible');
+                }, index * 300);
+            });
+    
+            pasoActual = 1;
+        });
+    
+        // 1. Clic en pantalla para subir el modelo 3D desde abajo lentamente
+        contenedor.addEventListener('click', () => {
+            if (pasoActual === 1) {
+                imagenesCollage.forEach(img => img.classList.add('visible'));
+                modelViewer.classList.add('visible');
+                pasoActual = 2;
+            }
+        });
+    
+        // 2. Clic directo en la tarjeta izquierda (TMG)
+        btnTMG.addEventListener('click', (e) => {
+            e.stopPropagation();
+            imgTMG.classList.add('revelada');
+        });
+    
+        // 3. Clic directo en la tarjeta derecha (WLA)
+        btnWLA.addEventListener('click', (e) => {
+            e.stopPropagation();
+            imgWLA.classList.add('revelada');
+        });
+    </script>
+
+</body>
+</html>
