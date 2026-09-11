@@ -123,17 +123,13 @@
             place-self: center;
             transform: rotate(-45deg);
             margin-right: 200px;
-
-            max-width: 100%;
-            height: auto;
-            display: block;
         }
 
         @media (max-width: 767px) {
-              .palabra-1 {
-                margin-left: 0;   /* Resetea el margen para que no se salga de la pantalla */
-                left: auto;        /* Resetea el desplazamiento si usaste position */
-              }
+            .palabra-1 {
+                margin-right: 0; /* Esto elimina el margen de 200px que pusiste arriba */
+                scale: 1;         
+            }
             }
 
         .palabra-2 {
