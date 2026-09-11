@@ -258,10 +258,7 @@
 
     </div>
 
-     <audio id="background-music" loop>
-        <source src="calle13 - Muerte En Hawaii.opus" type="audio/mpeg">
-        Tu navegador no soporta el elemento de audio.
-    </audio>
+     <audio id="background-music"></audio>
 
     <script>
         let pasoActual = 0;
@@ -304,21 +301,39 @@
             }
         });
 
+        // 1. Lista con todas las canciones que quieras agregar
+        const playlist = [
+        "calle13 - Muerte En Hawaii.opus",
+        "Jósean Log - Doma.m4a"
+        // Puedes agregar más canciones aquí separadas por coma
+        ];
+
+        let currentIndex = 0;
+        const music = document.getElementById('background-music');
+
+        // 2. Función para cargar y poner a sonar la canción actual
+        function cargarYReproducir() {
+        music.src = playlist[currentIndex];
+        music.volume = 0.5;
+        music.play().catch(error => {
+            console.log("Error o bloqueo al reproducir:", error);
+        });
+        }
+
+        // 3. Pasar a la siguiente canción al terminar
+        music.addEventListener('ended', () => {
+        // Pasa a la siguiente posición. El uso de '%' hace que vuelva a 0 al llegar al final (bucle)
+        currentIndex = (currentIndex + 1) % playlist.length;
+        cargarYReproducir();
+        });
+
+        // 4. Activar con el primer clic del usuario (requerido por políticas del navegador)
         function activarMusica() {
-            const music = document.getElementById('background-music');
+        cargarYReproducir();
+        document.removeEventListener('click', activarMusica);
+        }
 
-            music.volume = 0.5;
-            
-            music.play().then(() => {   
-                // Si la música arranca con éxito, cambiamos el texto del aviso y removemos este evento
-                document.removeEventListener('click', activarMusica);
-            }).catch(error => {
-                console.log("El navegador bloqueó la reproducción automática.", error);
-            });
-            }
-
-            // Escucha el primer clic en todo el documento HTML
-            document.addEventListener('click', activarMusica);
+        document.addEventListener('click', activarMusica);
     
     
         // 2. Clic directo en la tarjeta izquierda (TMG)
