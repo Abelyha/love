@@ -68,8 +68,8 @@
             position: absolute;
             top: 0; left: 0; width: 100%; height: 100%;
             display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            grid-template-rows: repeat(2, 1fr);
+            grid-template-columns: repeat(1, 1fr);
+            grid-template-rows: repeat(1, 1fr);
             gap: 1px;
             z-index: 1;
         }
@@ -86,7 +86,7 @@
         }
 
         .collage-fondo img.visible {
-            opacity: 1;
+            opacity: 100;
         }
 
         /* 2. PALABRAS TRANSPARENTES */
@@ -122,7 +122,7 @@
             scale: .7;
             place-self: center;
             transform: rotate(-45deg);
-            margin-right: 200px;
+            margin-right: 300px;
         }
 
         @media (max-width: 767px) {
@@ -135,11 +135,11 @@
         .palabra-2 {
             grid-column: 2;
             grid-row: 2;
-            scale: 1.0;
+            scale: 1.5;
             place-self: center;
-            margin-bottom: 100px;
             transform: rotate(-45deg);
-            margin-top: -300px;
+            margin-top: -350px;
+            margin-right: -200px;
             
         }
 
@@ -207,14 +207,7 @@
 
         <!-- 1. Collage de Fondo -->
         <div class="collage-fondo" id="collageFondo">
-            <img src="1.jpeg" alt="Fondo 1">
-            <img src="2.jpeg" alt="Fondo 2">
-            <img src="3.jpeg" alt="Fondo 3">
-            <img src="4.jpeg" alt="Fondo 4">
-            <img src="5.jpeg" alt="Fondo 5">
-            <img src="6.jpeg" alt="Fondo 6">
-            <img src="7.jpeg" alt="Fondo 7">
-            <img src="8.jpeg" alt="Fondo 8">
+            <img src="33.jpg" alt="Fondo 1">
         </div>
 
         <!-- 2. Palabras Transparentes -->
@@ -232,7 +225,7 @@
         auto-rotate 
         camera-controls>
         
-        <h3 style="color: #000000;">Mi Proyecto con Amor, Arte y... Abel para ti mi Yamilet :)</h3>
+        <h3 style="color: #FFFFFF;">Mi Proyecto con Amor, Arte y... Abel para ti mi Yamilet :)</h3>
 
 
         <!-- Tarjeta Izquierda (TMG) -->
@@ -314,7 +307,7 @@
         // 2. Función para cargar y poner a sonar la canción actual
         function cargarYReproducir() {
         music.src = playlist[currentIndex];
-        music.volume = 0.5;
+        music.volume = 0.2;
         music.play().catch(error => {
             console.log("Error o bloqueo al reproducir:", error);
         });
